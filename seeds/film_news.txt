@@ -1,0 +1,35 @@
+# Film News Seed URLs
+# One URL per line. Lines starting with # are comments.
+
+# Major Film Industry News
+https://www.hollywoodreporter.com
+https://variety.com
+https://deadline.com
+https://www.indiewire.com
+https://www.screendaily.com
+https://www.filmlinc.org
+
+# Entertainment / Film Culture
+https://www.rottentomatoes.com/news
+https://www.slashfilm.com
+https://collider.com
+https://screenrant.com
+https://www.cinemablend.com
+https://www.firstshowing.net
+
+# Film Review & Criticism
+https://www.rogerebert.com
+https://letterboxd.com/journal
+https://filmschoolrejects.com
+https://theplaylist.net
+
+# International Film News
+https://www.bfi.org.uk/news
+https://www.dga.org/news
+https://www.cineuropa.org
+https://asianmoviepulse.com
+
+# Independent & Documentary Film
+https://www.filmmaker-magazine.com
+https://nofilmschool.com
+https://www.documentary.org/news
