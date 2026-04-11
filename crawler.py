@@ -27,6 +27,7 @@ class Crawler:
         self.max_depth = max_depth or config.MAX_DEPTH
         self.visited = set()
         self.queue = deque()  # (url, depth)
+        self.allowed_domains = set()  # domains from seed URLs
         self.robots_cache = {}  # domain -> RobotExclusionRulesParser
         self.domain_last_request = {}  # domain -> timestamp
         self.content_fingerprints = []  # SimHash fingerprints of seen pages
@@ -102,8 +103,11 @@ class Crawler:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):
-                    self.queue.append((self.normalize_url(line), 0))
-        logger.info("Loaded %d seed URLs", len(self.queue))
+                    normalized = self.normalize_url(line)
+                    self.queue.append((normalized, 0))
+                    self.allowed_domains.add(urlparse(normalized).netloc)
+        logger.info("Loaded %d seed URLs across %d domains",
+                     len(self.queue), len(self.allowed_domains))
 
     # --- Robots.txt ---
 
@@ -156,17 +160,17 @@ class Crawler:
             return None
 
     def extract_links(self, url, html):
-        """Extract absolute URLs from an HTML page."""
+        """Extract absolute URLs from an HTML page, limited to seed domains."""
         soup = BeautifulSoup(html, "lxml")
         links = set()
         for tag in soup.find_all("a", href=True):
             href = tag["href"]
             absolute = urljoin(url, href)
             parsed = urlparse(absolute)
-            # Only follow http/https, strip fragments
             if parsed.scheme in ("http", "https"):
                 clean = self.normalize_url(absolute)
-                links.add(clean)
+                if urlparse(clean).netloc in self.allowed_domains:
+                    links.add(clean)
         return links
 
     def save_page(self, url, html, metadata):

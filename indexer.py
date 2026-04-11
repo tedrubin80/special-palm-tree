@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 class Indexer:
     """Builds and queries a basic inverted index over crawled HTML pages."""
 
+    STOP_WORDS = frozenset(
+        "a an and are as at be but by for from had has have he her his how i "
+        "if in into is it its just me my no not of on or our out own s she so "
+        "some such t than that the their them then there these they this to too "
+        "us very was we were what when which who will with would you your".split()
+    )
+
     def __init__(self):
         self.index = defaultdict(list)  # term -> [(url, title, score)]
         self.documents = {}  # url -> {title, word_count}
@@ -28,6 +35,11 @@ class Indexer:
     def tokenize(text):
         """Lowercase and split text into word tokens."""
         return re.findall(r"[a-z0-9]+", text.lower())
+
+    @classmethod
+    def filter_stop_words(cls, tokens):
+        """Remove stop words from a token list."""
+        return [t for t in tokens if t not in cls.STOP_WORDS]
 
     @staticmethod
     def extract_text(html):
@@ -68,13 +80,17 @@ class Indexer:
             url = meta["url"]
             title = meta.get("title", "")
             text = self.extract_text(html)
-            tokens = self.tokenize(text)
-            title_tokens = set(self.tokenize(title))
+            tokens = self.filter_stop_words(self.tokenize(text))
+            title_tokens = set(self.filter_stop_words(self.tokenize(title)))
+
+            # Store first 500 chars of visible text for search snippets
+            snippet_text = text[:500] if len(text) > 500 else text
 
             self.documents[url] = {
                 "title": title,
                 "word_count": len(tokens),
                 "title_tokens": list(title_tokens),
+                "snippet_source": snippet_text,
             }
 
             tf = defaultdict(int)

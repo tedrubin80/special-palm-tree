@@ -10,7 +10,7 @@ def search(query, top_n=10):
     indexer = Indexer()
     indexer.load()
 
-    terms = indexer.tokenize(query)
+    terms = indexer.filter_stop_words(indexer.tokenize(query))
     if not terms:
         return []
 

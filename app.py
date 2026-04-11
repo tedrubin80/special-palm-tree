@@ -1,6 +1,9 @@
 """Flask web interface for the search engine."""
 
+import re
+
 from flask import Flask, render_template, request
+from markupsafe import Markup
 
 from indexer import Indexer
 
@@ -14,13 +17,41 @@ except FileNotFoundError:
     print("Warning: No index found. Run indexer.py first.")
 
 
+def make_snippet(text, terms, max_len=200):
+    """Extract a snippet from text centered on the first matching term."""
+    text_lower = text.lower()
+    best_pos = -1
+    for term in terms:
+        pos = text_lower.find(term)
+        if pos != -1:
+            best_pos = pos
+            break
+
+    if best_pos == -1:
+        snippet = text[:max_len]
+    else:
+        start = max(0, best_pos - max_len // 2)
+        snippet = text[start:start + max_len]
+        if start > 0:
+            snippet = "..." + snippet
+        if start + max_len < len(text):
+            snippet = snippet + "..."
+
+    # Bold the matching terms
+    for term in terms:
+        pattern = re.compile(re.escape(term), re.IGNORECASE)
+        snippet = pattern.sub(lambda m: f"<b>{m.group()}</b>", snippet)
+
+    return Markup(snippet)
+
+
 @app.route("/")
 def home():
     query = request.args.get("q", "").strip()
     results = []
 
     if query:
-        terms = indexer.tokenize(query)
+        terms = indexer.filter_stop_words(indexer.tokenize(query))
         scores = {}
         for term in terms:
             for url, title, score in indexer.index.get(term, []):
@@ -28,14 +59,28 @@ def home():
                     scores[url] = {"score": 0, "title": title}
                 scores[url]["score"] += score
 
-        results = [
-            {"url": url, "title": info["title"], "score": round(info["score"], 2)}
-            for url, info in scores.items()
-        ]
+        results = []
+        for url, info in scores.items():
+            doc = indexer.documents.get(url, {})
+            snippet_source = doc.get("snippet_source", "")
+            snippet = make_snippet(snippet_source, terms) if snippet_source else ""
+            results.append({
+                "url": url,
+                "title": info["title"],
+                "score": round(info["score"], 2),
+                "snippet": snippet,
+            })
         results.sort(key=lambda r: r["score"], reverse=True)
-        results = results[:20]
 
-    return render_template("search.html", query=query, results=results)
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+    total = len(results)
+    start = (page - 1) * per_page
+    paginated = results[start:start + per_page]
+    total_pages = (total + per_page - 1) // per_page
+
+    return render_template("search.html", query=query, results=paginated,
+                           page=page, total=total, total_pages=total_pages)
 
 
 if __name__ == "__main__":

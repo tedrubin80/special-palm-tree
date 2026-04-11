@@ -53,7 +53,6 @@
             white-space: nowrap;
         }
 
-        /* Search form */
         .search-form {
             display: flex;
             width: 100%;
@@ -94,7 +93,6 @@
             border-color: #e0b400;
         }
 
-        /* Results */
         .result-count {
             font-size: 0.85rem;
             color: #888;
@@ -102,7 +100,7 @@
         }
 
         .result {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.75rem;
         }
 
         .result-title {
@@ -122,19 +120,62 @@
         .result-url {
             font-size: 0.85rem;
             color: #5a9a5a;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.35rem;
             word-break: break-all;
+        }
+
+        .result-snippet {
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            line-height: 1.5;
+            margin-bottom: 0.2rem;
+        }
+
+        .result-snippet b {
+            color: #e0e0e0;
+            font-weight: 600;
         }
 
         .result-score {
             font-size: 0.75rem;
-            color: #666;
+            color: #555;
         }
 
         .no-results {
             color: #888;
             font-size: 1rem;
             margin-top: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .pagination a, .pagination span {
+            padding: 0.5rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .pagination a {
+            color: #6ea8fe;
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+
+        .pagination a:hover {
+            border-color: #f5c518;
+        }
+
+        .pagination .current {
+            color: #0f0f0f;
+            background: #f5c518;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -158,16 +199,37 @@
         </div>
 
         {% if results %}
-            <div class="result-count">{{ results|length }} result{{ 's' if results|length != 1 }} for "{{ query }}"</div>
+            <div class="result-count">{{ total }} result{{ 's' if total != 1 }} for "{{ query }}"</div>
             {% for r in results %}
                 <div class="result">
                     <div class="result-title">
                         <a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.title or r.url }}</a>
                     </div>
                     <div class="result-url">{{ r.url }}</div>
+                    {% if r.snippet %}
+                        <div class="result-snippet">{{ r.snippet }}</div>
+                    {% endif %}
                     <div class="result-score">Score: {{ r.score }}</div>
                 </div>
             {% endfor %}
+
+            {% if total_pages > 1 %}
+                <div class="pagination">
+                    {% if page > 1 %}
+                        <a href="/?q={{ query }}&page={{ page - 1 }}">Prev</a>
+                    {% endif %}
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                            <span class="current">{{ p }}</span>
+                        {% else %}
+                            <a href="/?q={{ query }}&page={{ p }}">{{ p }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page < total_pages %}
+                        <a href="/?q={{ query }}&page={{ page + 1 }}">Next</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         {% else %}
             <div class="no-results">No results found for "{{ query }}".</div>
         {% endif %}
