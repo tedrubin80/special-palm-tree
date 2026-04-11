@@ -1,6 +1,8 @@
 """Simple inverted index built from crawled pages."""
 
 import json
+import logging
+import math
 import os
 import re
 from collections import defaultdict
@@ -8,6 +10,8 @@ from collections import defaultdict
 from bs4 import BeautifulSoup
 
 import config
+
+logger = logging.getLogger(__name__)
 
 
 class Indexer:
@@ -38,7 +42,7 @@ class Indexer:
     def build(self):
         """Scan crawled pages and build the inverted index."""
         if not os.path.isdir(config.PAGES_DIR):
-            print("No crawled pages found. Run the crawler first.")
+            logger.warning("No crawled pages found. Run the crawler first.")
             return
 
         page_dirs = [
@@ -46,6 +50,8 @@ class Indexer:
             if os.path.isdir(os.path.join(config.PAGES_DIR, d))
         ]
 
+        # First pass: collect term frequencies per document
+        doc_tfs = {}  # url -> {term: raw_count}
         for page_hash in page_dirs:
             page_dir = os.path.join(config.PAGES_DIR, page_hash)
             meta_path = os.path.join(page_dir, "metadata.json")
@@ -65,19 +71,39 @@ class Indexer:
             tokens = self.tokenize(text)
             title_tokens = set(self.tokenize(title))
 
-            self.documents[url] = {"title": title, "word_count": len(tokens)}
+            self.documents[url] = {
+                "title": title,
+                "word_count": len(tokens),
+                "title_tokens": list(title_tokens),
+            }
 
-            # Count term frequency
             tf = defaultdict(int)
             for token in tokens:
                 tf[token] += 1
+            doc_tfs[url] = dict(tf)
 
+        # Compute document frequency for each term
+        num_docs = len(self.documents)
+        df = defaultdict(int)  # term -> number of docs containing it
+        for tf in doc_tfs.values():
+            for term in tf:
+                df[term] += 1
+
+        # Second pass: compute TF-IDF scores and build index
+        for url, tf in doc_tfs.items():
+            title = self.documents[url]["title"]
+            title_tokens = set(self.documents[url]["title_tokens"])
             for term, count in tf.items():
-                # Boost score if term appears in the title
-                score = count + (10 if term in title_tokens else 0)
-                self.index[term].append((url, title, score))
+                # Log-normalized TF * IDF
+                tf_score = 1 + math.log(count)
+                idf_score = math.log(1 + num_docs / df[term])
+                score = tf_score * idf_score
+                # Boost if term appears in the title
+                if term in title_tokens:
+                    score *= 2.0
+                self.index[term].append((url, title, round(score, 4)))
 
-        print(f"Indexed {len(self.documents)} documents, {len(self.index)} unique terms")
+        logger.info("Indexed %d documents, %d unique terms", len(self.documents), len(self.index))
         self._save()
 
     def _save(self):
@@ -88,7 +114,7 @@ class Indexer:
         docs_path = os.path.join(config.INDEX_DIR, "documents.json")
         with open(docs_path, "w") as f:
             json.dump(self.documents, f, indent=2)
-        print(f"Index saved to {config.INDEX_DIR}")
+        logger.info("Index saved to %s", config.INDEX_DIR)
 
     def load(self):
         """Load a previously built index from disk."""
@@ -98,9 +124,14 @@ class Indexer:
             self.index = defaultdict(list, json.load(f))
         with open(docs_path) as f:
             self.documents = json.load(f)
-        print(f"Loaded index: {len(self.documents)} documents, {len(self.index)} terms")
+        logger.info("Loaded index: %d documents, %d terms", len(self.documents), len(self.index))
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     indexer = Indexer()
     indexer.build()

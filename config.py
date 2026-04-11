@@ -3,7 +3,7 @@
 import os
 
 # --- Crawl Behavior ---
-USER_AGENT = "FilmNewsCrawler/0.1 (+https://github.com/tedrubin80/special-palm-tree)"
+USER_AGENT = "MediaSearchBot/0.1 (+https://mediasearch.online)"
 REQUEST_TIMEOUT = 10  # seconds
 CRAWL_DELAY = 2  # seconds between requests to the same domain
 MAX_PAGES_PER_DOMAIN = 100

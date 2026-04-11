@@ -2,16 +2,20 @@
 
 import hashlib
 import json
+import logging
 import os
+import re
 import time
 from collections import deque
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qs, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
 from robotexclusionrulesparser import RobotExclusionRulesParser
 
 import config
+
+logger = logging.getLogger(__name__)
 
 
 class Crawler:
@@ -25,9 +29,70 @@ class Crawler:
         self.queue = deque()  # (url, depth)
         self.robots_cache = {}  # domain -> RobotExclusionRulesParser
         self.domain_last_request = {}  # domain -> timestamp
+        self.content_fingerprints = []  # SimHash fingerprints of seen pages
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": config.USER_AGENT})
         os.makedirs(config.PAGES_DIR, exist_ok=True)
+
+    # --- URL normalization ---
+
+    # Query params that are tracking/noise, not content-affecting
+    STRIP_PARAMS = re.compile(
+        r"^(utm_|fbclid|gclid|ref|source|mc_|oly_|spm|vero_)"
+    )
+
+    @classmethod
+    def normalize_url(cls, url):
+        """Normalize a URL to reduce trivial duplicates."""
+        parsed = urlparse(url)
+        # Lowercase scheme and host
+        scheme = parsed.scheme.lower()
+        netloc = parsed.netloc.lower()
+        # Strip trailing slash from path (except root)
+        path = parsed.path.rstrip("/") or "/"
+        # Sort query params, drop tracking params
+        params = parse_qs(parsed.query, keep_blank_values=True)
+        filtered = {
+            k: v for k, v in sorted(params.items())
+            if not cls.STRIP_PARAMS.match(k)
+        }
+        query = urlencode(filtered, doseq=True) if filtered else ""
+        # Drop fragment
+        return urlunparse((scheme, netloc, path, "", query, ""))
+
+    # --- Content fingerprinting (SimHash) ---
+
+    @staticmethod
+    def _simhash(text, hashbits=64):
+        """Compute a SimHash fingerprint from text tokens."""
+        tokens = re.findall(r"[a-z0-9]+", text.lower())
+        v = [0] * hashbits
+        for token in tokens:
+            h = int(hashlib.md5(token.encode()).hexdigest(), 16)
+            for i in range(hashbits):
+                if h & (1 << i):
+                    v[i] += 1
+                else:
+                    v[i] -= 1
+        fingerprint = 0
+        for i in range(hashbits):
+            if v[i] > 0:
+                fingerprint |= (1 << i)
+        return fingerprint
+
+    @staticmethod
+    def _hamming_distance(a, b):
+        """Count differing bits between two integers."""
+        return bin(a ^ b).count("1")
+
+    def _is_near_duplicate(self, text, threshold=3):
+        """Check if text is a near-duplicate of already-seen content."""
+        fp = self._simhash(text)
+        for seen_fp in self.content_fingerprints:
+            if self._hamming_distance(fp, seen_fp) <= threshold:
+                return True
+        self.content_fingerprints.append(fp)
+        return False
 
     # --- Seed loading ---
 
@@ -37,8 +102,8 @@ class Crawler:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#"):
-                    self.queue.append((line, 0))
-        print(f"Loaded {len(self.queue)} seed URLs")
+                    self.queue.append((self.normalize_url(line), 0))
+        logger.info("Loaded %d seed URLs", len(self.queue))
 
     # --- Robots.txt ---
 
@@ -87,7 +152,7 @@ class Crawler:
                 return None
             return resp
         except requests.RequestException as e:
-            print(f"  Error fetching {url}: {e}")
+            logger.warning("Error fetching %s: %s", url, e)
             return None
 
     def extract_links(self, url, html):
@@ -100,7 +165,7 @@ class Crawler:
             parsed = urlparse(absolute)
             # Only follow http/https, strip fragments
             if parsed.scheme in ("http", "https"):
-                clean = parsed._replace(fragment="").geturl()
+                clean = self.normalize_url(absolute)
                 links.add(clean)
         return links
 
@@ -130,20 +195,26 @@ class Crawler:
             if depth > self.max_depth:
                 continue
             if not self._is_allowed(url):
-                print(f"  Blocked by robots.txt: {url}")
+                logger.debug("Blocked by robots.txt: %s", url)
                 continue
 
-            print(f"[{pages_crawled + 1}] Depth {depth}: {url}")
+            logger.info("[%d] Depth %d: %s", pages_crawled + 1, depth, url)
             resp = self.fetch(url)
             if resp is None:
                 continue
 
             self.visited.add(url)
-            pages_crawled += 1
 
-            # Parse and save
+            # Parse and check for near-duplicate content
             html = resp.text
             soup = BeautifulSoup(html, "lxml")
+            # Extract visible text for fingerprinting
+            text_content = soup.get_text(separator=" ", strip=True)
+            if self._is_near_duplicate(text_content):
+                logger.info("Skipped (near-duplicate): %s", url)
+                continue
+
+            pages_crawled += 1
             title = soup.title.string.strip() if soup.title and soup.title.string else ""
 
             metadata = {
@@ -163,13 +234,18 @@ class Crawler:
                         self.queue.append((link, depth + 1))
 
             if pages_crawled >= self.max_pages:
-                print(f"Reached max pages limit ({self.max_pages})")
+                logger.info("Reached max pages limit (%d)", self.max_pages)
                 break
 
-        print(f"\nCrawl complete. {pages_crawled} pages fetched.")
+        logger.info("Crawl complete. %d pages fetched.", pages_crawled)
         return pages_crawled
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     crawler = Crawler()
     crawler.crawl()
