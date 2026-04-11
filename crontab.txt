@@ -1,0 +1,11 @@
+# MediaSearch crawl schedules
+# Install with: crontab /var/www/search/crontab.txt
+#
+# Breaking news: every 2 hours (5 sites, depth 2, 50 pages)
+0 */2 * * * /var/www/search/run_crawl.sh breaking >> /var/www/search/data/logs/breaking.log 2>&1
+#
+# Daily sources: 2 AM (genre + review sites, depth 3, 100 pages)
+0 2 * * * /var/www/search/run_crawl.sh daily >> /var/www/search/data/logs/daily.log 2>&1
+#
+# Weekly sources: Sunday 3 AM (niche + international, depth 3, 150 pages)
+0 3 * * 0 /var/www/search/run_crawl.sh weekly >> /var/www/search/data/logs/weekly.log 2>&1

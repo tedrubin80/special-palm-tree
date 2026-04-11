@@ -246,10 +246,23 @@ class Crawler:
 
 
 if __name__ == "__main__":
+    import argparse
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    crawler = Crawler()
+
+    parser = argparse.ArgumentParser(description="MediaSearch web crawler")
+    parser.add_argument("--seed-file", default=None, help="Path to seed URL file")
+    parser.add_argument("--max-pages", type=int, default=None, help="Max pages to crawl")
+    parser.add_argument("--max-depth", type=int, default=None, help="Max crawl depth")
+    args = parser.parse_args()
+
+    crawler = Crawler(
+        seed_file=args.seed_file,
+        max_pages=args.max_pages,
+        max_depth=args.max_depth,
+    )
     crawler.crawl()

@@ -1,0 +1,22 @@
+# Daily Film News — crawled once per day
+# Medium-volume entertainment and genre sites
+
+# Entertainment / Film Culture
+https://www.slashfilm.com
+https://collider.com
+https://screenrant.com
+https://www.cinemablend.com
+https://www.firstshowing.net
+https://filmschoolrejects.com
+
+# Sci-Fi
+https://www.syfy.com/syfy-wire
+https://io9.gizmodo.com
+https://www.denofgeek.com
+https://screenrant.com/tag/sci-fi
+https://www.space.com/entertainment
+
+# Horror
+https://www.dreadcentral.com
+https://horrorgeeklife.com
+https://wickedhorror.com

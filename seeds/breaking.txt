@@ -1,0 +1,9 @@
+# Breaking Film News — crawled every 2 hours
+# High-volume sites that publish multiple times per day
+
+# Major Industry News
+https://www.hollywoodreporter.com
+https://variety.com
+https://deadline.com
+https://www.indiewire.com
+https://www.screendaily.com
