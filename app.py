@@ -1,6 +1,8 @@
 """Flask web interface for the search engine."""
 
+import json
 import re
+from pathlib import Path
 
 from flask import Flask, render_template, request
 from markupsafe import Markup
@@ -9,12 +11,22 @@ from indexer import Indexer
 
 app = Flask(__name__)
 
+FINANCE_PATH = Path(__file__).parent / "data" / "finance.json"
+
 # Load index once at startup
 indexer = Indexer()
 try:
     indexer.load()
 except FileNotFoundError:
     print("Warning: No index found. Run indexer.py first.")
+
+
+def load_finance():
+    """Read current quotes from disk on each request — file is tiny."""
+    try:
+        return json.loads(FINANCE_PATH.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"quotes": []}
 
 
 def make_snippet(text, terms, max_len=200):
@@ -79,8 +91,10 @@ def home():
     paginated = results[start:start + per_page]
     total_pages = (total + per_page - 1) // per_page
 
+    finance = load_finance()
     return render_template("search.html", query=query, results=paginated,
-                           page=page, total=total, total_pages=total_pages)
+                           page=page, total=total, total_pages=total_pages,
+                           finance=finance)
 
 
 if __name__ == "__main__":

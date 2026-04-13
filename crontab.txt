@@ -9,3 +9,7 @@
 #
 # Weekly sources: Sunday 3 AM (niche + international, depth 3, 150 pages)
 0 3 * * 0 /var/www/search/run_crawl.sh weekly >> /var/www/search/data/logs/weekly.log 2>&1
+#
+# Stock quotes: 3x/day on weekdays (pre-open 9 AM ET, midday 1 PM ET, post-close 5 PM ET)
+# Server assumed UTC; ET is UTC-5 (standard) / UTC-4 (DST). Using UTC-4 (DST).
+0 13,17,21 * * 1-5 cd /var/www/search && ./venv/bin/python3 finance_fetch.py >> /var/www/search/data/logs/finance.log 2>&1

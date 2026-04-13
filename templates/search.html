@@ -177,9 +177,63 @@
             background: #f5c518;
             font-weight: 600;
         }
+
+        .ticker-bar {
+            background: #1a1a1a;
+            border-bottom: 1px solid #2a2a2a;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .ticker-track {
+            display: inline-block;
+            padding: 0.55rem 0;
+            animation: ticker-scroll 60s linear infinite;
+        }
+
+        .ticker-bar:hover .ticker-track {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker-scroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 1.25rem;
+            font-size: 0.85rem;
+            font-family: "SF Mono", "Menlo", monospace;
+        }
+
+        .ticker-symbol { color: #e0e0e0; font-weight: 600; margin-right: 0.4rem; }
+        .ticker-price  { color: #b0b0b0; margin-right: 0.4rem; }
+        .ticker-up     { color: #4caf50; }
+        .ticker-down   { color: #ef5350; }
+        .ticker-flat   { color: #888; }
     </style>
 </head>
 <body>
+{% if finance and finance.quotes %}
+    <div class="ticker-bar">
+        <div class="ticker-track">
+            {# Render twice so the loop seam is invisible #}
+            {% for _ in range(2) %}
+                {% for q in finance.quotes %}
+                    {% set cls = 'ticker-up' if q.pct > 0 else ('ticker-down' if q.pct < 0 else 'ticker-flat') %}
+                    {% set arrow = '▲' if q.pct > 0 else ('▼' if q.pct < 0 else '◆') %}
+                    <span class="ticker-item">
+                        <span class="ticker-symbol">{{ q.symbol }}</span>
+                        <span class="ticker-price">${{ '%.2f'|format(q.price) }}</span>
+                        <span class="{{ cls }}">{{ arrow }} {{ '%+.2f'|format(q.pct) }}%</span>
+                    </span>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
 {% if not query %}
     <div class="landing">
         <h1>MediaSearch</h1>
