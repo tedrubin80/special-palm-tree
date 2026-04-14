@@ -14,6 +14,7 @@ RESPECT_ROBOTS_TXT = True
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 INDEX_DIR = os.path.join(DATA_DIR, "index")
 PAGES_DIR = os.path.join(DATA_DIR, "pages")
+DB_PATH = os.path.join(DATA_DIR, "search.db")
 
 # --- Seeds ---
 SEEDS_DIR = os.path.join(os.path.dirname(__file__), "seeds")

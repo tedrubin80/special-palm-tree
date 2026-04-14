@@ -1,5 +1,6 @@
 """Web crawler that fetches pages starting from seed URLs."""
 
+import gzip
 import hashlib
 import json
 import logging
@@ -179,7 +180,7 @@ class Crawler:
         page_dir = os.path.join(config.PAGES_DIR, url_hash)
         os.makedirs(page_dir, exist_ok=True)
 
-        with open(os.path.join(page_dir, "page.html"), "w", encoding="utf-8") as f:
+        with gzip.open(os.path.join(page_dir, "page.html.gz"), "wt", encoding="utf-8") as f:
             f.write(html)
         with open(os.path.join(page_dir, "metadata.json"), "w") as f:
             json.dump(metadata, f, indent=2)

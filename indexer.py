@@ -1,11 +1,11 @@
-"""Simple inverted index built from crawled pages."""
+"""SQLite FTS5 inverted index built from crawled pages."""
 
+import gzip
 import json
 import logging
-import math
 import os
 import re
-from collections import defaultdict
+import sqlite3
 
 from bs4 import BeautifulSoup
 
@@ -14,133 +14,152 @@ import config
 logger = logging.getLogger(__name__)
 
 
-class Indexer:
-    """Builds and queries a basic inverted index over crawled HTML pages."""
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS documents (
+    id            INTEGER PRIMARY KEY,
+    url           TEXT UNIQUE NOT NULL,
+    title         TEXT,
+    body          TEXT,
+    snippet_source TEXT,
+    source_type   TEXT DEFAULT 'web',
+    crawled_at    TEXT
+);
 
-    STOP_WORDS = frozenset(
-        "a an and are as at be but by for from had has have he her his how i "
-        "if in into is it its just me my no not of on or our out own s she so "
-        "some such t than that the their them then there these they this to too "
-        "us very was we were what when which who will with would you your".split()
+CREATE VIRTUAL TABLE IF NOT EXISTS fts USING fts5(
+    title, body,
+    content='documents',
+    content_rowid='id',
+    tokenize='porter unicode61'
+);
+
+CREATE TRIGGER IF NOT EXISTS documents_ai AFTER INSERT ON documents BEGIN
+    INSERT INTO fts(rowid, title, body) VALUES (new.id, new.title, new.body);
+END;
+CREATE TRIGGER IF NOT EXISTS documents_ad AFTER DELETE ON documents BEGIN
+    INSERT INTO fts(fts, rowid, title, body) VALUES('delete', old.id, old.title, old.body);
+END;
+CREATE TRIGGER IF NOT EXISTS documents_au AFTER UPDATE ON documents BEGIN
+    INSERT INTO fts(fts, rowid, title, body) VALUES('delete', old.id, old.title, old.body);
+    INSERT INTO fts(rowid, title, body) VALUES (new.id, new.title, new.body);
+END;
+"""
+
+
+def connect(db_path=None):
+    """Open a SQLite connection with FTS5 schema applied."""
+    db_path = db_path or config.DB_PATH
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    conn.executescript(SCHEMA)
+    return conn
+
+
+def extract_text(html):
+    """Strip tags and return visible text."""
+    soup = BeautifulSoup(html, "lxml")
+    for tag in soup(["script", "style", "nav", "footer", "header"]):
+        tag.decompose()
+    return soup.get_text(separator=" ", strip=True)
+
+
+def read_page_html(page_dir):
+    """Read either page.html.gz or page.html from a page directory."""
+    gz_path = os.path.join(page_dir, "page.html.gz")
+    plain_path = os.path.join(page_dir, "page.html")
+    if os.path.exists(gz_path):
+        with gzip.open(gz_path, "rt", encoding="utf-8", errors="replace") as f:
+            return f.read()
+    if os.path.exists(plain_path):
+        with open(plain_path, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    return None
+
+
+def upsert_document(conn, url, title, body, snippet_source, crawled_at, source_type="web"):
+    """Insert or replace a document row; FTS5 stays in sync via triggers."""
+    conn.execute("DELETE FROM documents WHERE url = ?", (url,))
+    conn.execute(
+        "INSERT INTO documents (url, title, body, snippet_source, source_type, crawled_at) "
+        "VALUES (?, ?, ?, ?, ?, ?)",
+        (url, title, body, snippet_source, source_type, crawled_at),
     )
 
-    def __init__(self):
-        self.index = defaultdict(list)  # term -> [(url, title, score)]
-        self.documents = {}  # url -> {title, word_count}
-        os.makedirs(config.INDEX_DIR, exist_ok=True)
 
-    # --- Text processing ---
+def rebuild(conn=None):
+    """Scan crawled pages and rebuild the FTS5 index from scratch."""
+    if not os.path.isdir(config.PAGES_DIR):
+        logger.warning("No crawled pages found. Run the crawler first.")
+        return 0
 
-    @staticmethod
-    def tokenize(text):
-        """Lowercase and split text into word tokens."""
-        return re.findall(r"[a-z0-9]+", text.lower())
+    owns_conn = conn is None
+    if owns_conn:
+        conn = connect()
 
-    @classmethod
-    def filter_stop_words(cls, tokens):
-        """Remove stop words from a token list."""
-        return [t for t in tokens if t not in cls.STOP_WORDS]
+    conn.execute("DELETE FROM documents")
+    conn.execute("INSERT INTO fts(fts) VALUES('rebuild')")
 
-    @staticmethod
-    def extract_text(html):
-        """Strip tags and return visible text from HTML."""
-        soup = BeautifulSoup(html, "lxml")
-        for tag in soup(["script", "style", "nav", "footer", "header"]):
-            tag.decompose()
-        return soup.get_text(separator=" ", strip=True)
+    count = 0
+    for page_hash in os.listdir(config.PAGES_DIR):
+        page_dir = os.path.join(config.PAGES_DIR, page_hash)
+        if not os.path.isdir(page_dir):
+            continue
+        meta_path = os.path.join(page_dir, "metadata.json")
+        if not os.path.exists(meta_path):
+            continue
 
-    # --- Build index ---
+        html = read_page_html(page_dir)
+        if html is None:
+            continue
 
-    def build(self):
-        """Scan crawled pages and build the inverted index."""
-        if not os.path.isdir(config.PAGES_DIR):
-            logger.warning("No crawled pages found. Run the crawler first.")
-            return
+        with open(meta_path) as f:
+            meta = json.load(f)
 
-        page_dirs = [
-            d for d in os.listdir(config.PAGES_DIR)
-            if os.path.isdir(os.path.join(config.PAGES_DIR, d))
-        ]
+        url = meta["url"]
+        title = meta.get("title", "") or ""
+        body = extract_text(html)
+        snippet_source = body[:500]
+        crawled_at = meta.get("crawled_at", "")
 
-        # First pass: collect term frequencies per document
-        doc_tfs = {}  # url -> {term: raw_count}
-        for page_hash in page_dirs:
-            page_dir = os.path.join(config.PAGES_DIR, page_hash)
-            meta_path = os.path.join(page_dir, "metadata.json")
-            html_path = os.path.join(page_dir, "page.html")
+        upsert_document(conn, url, title, body, snippet_source, crawled_at)
+        count += 1
 
-            if not os.path.exists(meta_path) or not os.path.exists(html_path):
-                continue
+    conn.commit()
+    logger.info("Indexed %d documents into %s", count, config.DB_PATH)
+    if owns_conn:
+        conn.close()
+    return count
 
-            with open(meta_path) as f:
-                meta = json.load(f)
-            with open(html_path, encoding="utf-8") as f:
-                html = f.read()
 
-            url = meta["url"]
-            title = meta.get("title", "")
-            text = self.extract_text(html)
-            tokens = self.filter_stop_words(self.tokenize(text))
-            title_tokens = set(self.filter_stop_words(self.tokenize(title)))
+def search(conn, query, limit=10, offset=0):
+    """Run a BM25-ranked FTS5 search. Title matches weighted 10x body."""
+    # Escape FTS5 metacharacters from user input — keep it simple, treat the
+    # whole query as a single bag of terms
+    safe = re.sub(r'["\(\)\*:]', " ", query).strip()
+    if not safe:
+        return [], 0
+    # Tokenise and rejoin to get OR-over-terms behaviour
+    terms = safe.split()
+    match_expr = " OR ".join(terms)
 
-            # Store first 500 chars of visible text for search snippets
-            snippet_text = text[:500] if len(text) > 500 else text
+    rows = conn.execute(
+        """
+        SELECT d.url, d.title, d.snippet_source,
+               bm25(fts, 10.0, 1.0) AS rank_score
+        FROM fts
+        JOIN documents d ON d.id = fts.rowid
+        WHERE fts MATCH ?
+        ORDER BY rank_score
+        LIMIT ? OFFSET ?
+        """,
+        (match_expr, limit, offset),
+    ).fetchall()
 
-            self.documents[url] = {
-                "title": title,
-                "word_count": len(tokens),
-                "title_tokens": list(title_tokens),
-                "snippet_source": snippet_text,
-            }
+    total = conn.execute(
+        "SELECT count(*) FROM fts WHERE fts MATCH ?", (match_expr,)
+    ).fetchone()[0]
 
-            tf = defaultdict(int)
-            for token in tokens:
-                tf[token] += 1
-            doc_tfs[url] = dict(tf)
-
-        # Compute document frequency for each term
-        num_docs = len(self.documents)
-        df = defaultdict(int)  # term -> number of docs containing it
-        for tf in doc_tfs.values():
-            for term in tf:
-                df[term] += 1
-
-        # Second pass: compute TF-IDF scores and build index
-        for url, tf in doc_tfs.items():
-            title = self.documents[url]["title"]
-            title_tokens = set(self.documents[url]["title_tokens"])
-            for term, count in tf.items():
-                # Log-normalized TF * IDF
-                tf_score = 1 + math.log(count)
-                idf_score = math.log(1 + num_docs / df[term])
-                score = tf_score * idf_score
-                # Boost if term appears in the title
-                if term in title_tokens:
-                    score *= 2.0
-                self.index[term].append((url, title, round(score, 4)))
-
-        logger.info("Indexed %d documents, %d unique terms", len(self.documents), len(self.index))
-        self._save()
-
-    def _save(self):
-        """Persist index to disk as JSON."""
-        index_path = os.path.join(config.INDEX_DIR, "inverted_index.json")
-        with open(index_path, "w") as f:
-            json.dump(dict(self.index), f)
-        docs_path = os.path.join(config.INDEX_DIR, "documents.json")
-        with open(docs_path, "w") as f:
-            json.dump(self.documents, f, indent=2)
-        logger.info("Index saved to %s", config.INDEX_DIR)
-
-    def load(self):
-        """Load a previously built index from disk."""
-        index_path = os.path.join(config.INDEX_DIR, "inverted_index.json")
-        docs_path = os.path.join(config.INDEX_DIR, "documents.json")
-        with open(index_path) as f:
-            self.index = defaultdict(list, json.load(f))
-        with open(docs_path) as f:
-            self.documents = json.load(f)
-        logger.info("Loaded index: %d documents, %d terms", len(self.documents), len(self.index))
+    return rows, total
 
 
 if __name__ == "__main__":
@@ -149,5 +168,4 @@ if __name__ == "__main__":
         format="%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
-    indexer = Indexer()
-    indexer.build()
+    rebuild()
