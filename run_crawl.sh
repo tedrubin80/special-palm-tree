@@ -3,9 +3,9 @@
 # Usage: ./run_crawl.sh <breaking|daily|weekly|all>
 #
 # Cron examples:
-#   0 */2 * * *  /var/www/search/run_crawl.sh breaking
-#   0 2 * * *    /var/www/search/run_crawl.sh daily
-#   0 3 * * 0    /var/www/search/run_crawl.sh weekly
+#   0 */2 * * *  /var/www/media/run_crawl.sh breaking
+#   0 2 * * *    /var/www/media/run_crawl.sh daily
+#   0 3 * * 0    /var/www/media/run_crawl.sh weekly
 
 set -euo pipefail
 cd "$(dirname "$0")"

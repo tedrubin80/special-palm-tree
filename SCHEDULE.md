@@ -1,65 +1,68 @@
 # MediaSearch Crawl Schedule
 
 Canonical reference for the automated crawl and data-fetch jobs.
-Install or reinstall with: `crontab /var/www/search/crontab.txt`
+Install or reinstall with: `crontab /var/www/media/crontab.txt`
 
 ## Status
 
-**Crawler disabled 2026-05-16.** All four jobs below are commented out in the live crontab.
-The index and existing data are untouched; the Flask service is still running.
+**Crawler disabled 2026-07-21.** All four jobs are commented out in the live
+`www-data` crontab and in `crontab.txt`. Data backed up under `backups/`.
+Public surface replaced by the static showcase in `demo/`.
 
-To re-enable all jobs:
+The Flask `mediasearch.service` may still be running; stop it when ready:
 ```bash
-crontab -l | sed 's/^# DISABLED: //' | crontab -
+sudo systemctl stop mediasearch
+sudo systemctl disable mediasearch
 ```
 
-To disable again:
+To re-enable crawl jobs (not recommended):
 ```bash
-crontab -l | sed 's|^\(0 .*/var/www/search/.*\)|# DISABLED: \1|' | crontab -
+sudo crontab -u www-data /var/www/media/crontab.txt   # after uncommenting
 ```
 
 ---
 
-## Jobs
+## Jobs (historical)
 
 ### Breaking news — every 2 hours
 ```
-0 */2 * * * /var/www/search/run_crawl.sh breaking
+0 */2 * * * /var/www/media/run_crawl.sh breaking
 ```
-- Seed file: `seeds/breaking.txt` (9 sources — THR-class, high churn)
+- Seed file: `seeds/breaking.txt`
 - Max pages per domain: 50 | Depth: 2
 - Log: `data/logs/breaking.log`
 
 ### Daily sources — 2 AM UTC
 ```
-0 2 * * * /var/www/search/run_crawl.sh daily
+0 2 * * * /var/www/media/run_crawl.sh daily
 ```
-- Seed file: `seeds/daily.txt` (22 sources — genre, review, awards sites)
+- Seed file: `seeds/daily.txt`
 - Max pages per domain: 100 | Depth: 3
 - Log: `data/logs/daily.log`
 
 ### Weekly sources — Sunday 3 AM UTC
 ```
-0 3 * * 0 /var/www/search/run_crawl.sh weekly
+0 3 * * 0 /var/www/media/run_crawl.sh weekly
 ```
-- Seed file: `seeds/weekly.txt` (20 sources — sci-fi, horror, international)
+- Seed file: `seeds/weekly.txt`
 - Max pages per domain: 150 | Depth: 3
 - Log: `data/logs/weekly.log`
 
 ### Stock ticker refresh — 3× per weekday
 ```
-0 13,17,21 * * 1-5 cd /var/www/search && ./venv/bin/python3 finance_fetch.py
+0 13,17,21 * * 1-5 cd /var/www/media && ./venv/bin/python3 finance_fetch.py
 ```
-- Tickers: DIS, NFLX, WBD, PARA, CMCSA, SONY, AMC, IMAX, CNK, LGF.A (Finnhub free tier)
-- Times: 9 AM, 1 PM, 5 PM ET (approx — server runs UTC)
+- Tickers: DIS, NFLX, WBD, PARA, CMCSA, SONY, AMC, IMAX, CNK, LGF.A
 - Output: `data/finance.json`
 - Log: `data/logs/finance.log`
 
 ---
 
-## Notes
+## Backups (2026-07-21)
 
-- Each crawl tier runs `indexer.py` and restarts `mediasearch.service` on completion.
-- Crawl delay is per-domain (2 s), not global — multi-domain runs parallelize naturally.
-- Page-cap hits (`Reached max pages limit`) in logs are expected, not errors.
-- Finnhub free tier: 60 req/min. Current 10-ticker list with 0.1 s delay is well within limits.
+| Archive | Contents |
+|---------|----------|
+| `backups/mediasearch-index-20260721.tar.gz` | `search.db`, logs, seeds (~22 MB) |
+| `backups/mediasearch-pages-20260721.tar.gz` | pages HTML + db + logs + seeds (~251 MB) |
+
+Final index: **3,358** FTS documents · **6,744** stored page dirs · **24** domains.

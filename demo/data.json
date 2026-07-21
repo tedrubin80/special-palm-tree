@@ -1,0 +1,411 @@
+{
+  "total_documents": 3358,
+  "first_crawl": "2026-06-07T17:09:16Z",
+  "last_crawl": "2026-07-21T00:02:55Z",
+  "domains": [
+    {
+      "domain": "hollywoodreporter.com",
+      "count": 1634
+    },
+    {
+      "domain": "slashfilm.com",
+      "count": 894
+    },
+    {
+      "domain": "collider.com",
+      "count": 451
+    },
+    {
+      "domain": "bfi.org.uk",
+      "count": 183
+    },
+    {
+      "domain": "ihorror.com",
+      "count": 75
+    },
+    {
+      "domain": "culturecrypt.com",
+      "count": 49
+    },
+    {
+      "domain": "variety.com",
+      "count": 47
+    },
+    {
+      "domain": "tor.com",
+      "count": 8
+    },
+    {
+      "domain": "screenrant.com",
+      "count": 2
+    },
+    {
+      "domain": "deadline.com",
+      "count": 1
+    },
+    {
+      "domain": "filmschoolrejects.com",
+      "count": 1
+    },
+    {
+      "domain": "horrorgeeklife.com",
+      "count": 1
+    },
+    {
+      "domain": "io9.gizmodo.com",
+      "count": 1
+    },
+    {
+      "domain": "scifimoviepage.com",
+      "count": 1
+    },
+    {
+      "domain": "wickedhorror.com",
+      "count": 1
+    },
+    {
+      "domain": "cinemablend.com",
+      "count": 1
+    },
+    {
+      "domain": "denofgeek.com",
+      "count": 1
+    },
+    {
+      "domain": "dreadcentral.com",
+      "count": 1
+    },
+    {
+      "domain": "filmlinc.org",
+      "count": 1
+    },
+    {
+      "domain": "firstshowing.net",
+      "count": 1
+    },
+    {
+      "domain": "indiewire.com",
+      "count": 1
+    },
+    {
+      "domain": "screendaily.com",
+      "count": 1
+    },
+    {
+      "domain": "space.com",
+      "count": 1
+    },
+    {
+      "domain": "syfy.com",
+      "count": 1
+    }
+  ],
+  "domain_count": 24,
+  "crawl_days": [
+    {
+      "date": "2026-06-07",
+      "count": 5
+    },
+    {
+      "date": "2026-06-08",
+      "count": 85
+    },
+    {
+      "date": "2026-06-09",
+      "count": 80
+    },
+    {
+      "date": "2026-06-10",
+      "count": 78
+    },
+    {
+      "date": "2026-06-11",
+      "count": 64
+    },
+    {
+      "date": "2026-06-12",
+      "count": 63
+    },
+    {
+      "date": "2026-06-13",
+      "count": 42
+    },
+    {
+      "date": "2026-06-14",
+      "count": 66
+    },
+    {
+      "date": "2026-06-15",
+      "count": 85
+    },
+    {
+      "date": "2026-06-16",
+      "count": 89
+    },
+    {
+      "date": "2026-06-17",
+      "count": 61
+    },
+    {
+      "date": "2026-06-18",
+      "count": 62
+    },
+    {
+      "date": "2026-06-19",
+      "count": 54
+    },
+    {
+      "date": "2026-06-20",
+      "count": 40
+    },
+    {
+      "date": "2026-06-21",
+      "count": 82
+    },
+    {
+      "date": "2026-06-22",
+      "count": 83
+    },
+    {
+      "date": "2026-06-23",
+      "count": 80
+    },
+    {
+      "date": "2026-06-24",
+      "count": 62
+    },
+    {
+      "date": "2026-06-25",
+      "count": 69
+    },
+    {
+      "date": "2026-06-26",
+      "count": 52
+    },
+    {
+      "date": "2026-06-27",
+      "count": 41
+    },
+    {
+      "date": "2026-06-28",
+      "count": 83
+    },
+    {
+      "date": "2026-06-29",
+      "count": 87
+    },
+    {
+      "date": "2026-06-30",
+      "count": 78
+    },
+    {
+      "date": "2026-07-01",
+      "count": 60
+    },
+    {
+      "date": "2026-07-02",
+      "count": 59
+    },
+    {
+      "date": "2026-07-03",
+      "count": 42
+    },
+    {
+      "date": "2026-07-04",
+      "count": 48
+    },
+    {
+      "date": "2026-07-05",
+      "count": 83
+    },
+    {
+      "date": "2026-07-06",
+      "count": 66
+    },
+    {
+      "date": "2026-07-07",
+      "count": 74
+    },
+    {
+      "date": "2026-07-08",
+      "count": 83
+    },
+    {
+      "date": "2026-07-09",
+      "count": 73
+    },
+    {
+      "date": "2026-07-10",
+      "count": 64
+    },
+    {
+      "date": "2026-07-11",
+      "count": 42
+    },
+    {
+      "date": "2026-07-12",
+      "count": 79
+    },
+    {
+      "date": "2026-07-13",
+      "count": 72
+    },
+    {
+      "date": "2026-07-14",
+      "count": 85
+    },
+    {
+      "date": "2026-07-15",
+      "count": 81
+    },
+    {
+      "date": "2026-07-16",
+      "count": 121
+    },
+    {
+      "date": "2026-07-17",
+      "count": 70
+    },
+    {
+      "date": "2026-07-18",
+      "count": 49
+    },
+    {
+      "date": "2026-07-19",
+      "count": 204
+    },
+    {
+      "date": "2026-07-20",
+      "count": 186
+    },
+    {
+      "date": "2026-07-21",
+      "count": 126
+    }
+  ],
+  "articles": [
+    {
+      "title": "Did House Of The Dragon Season 3 Set Up One Of The Book's Most Mysterious Deaths?",
+      "url": "https://www.slashfilm.com/2217556/house-of-the-dragon-season-3-setup-mysterious-book-death-helaena",
+      "crawled_at": "2026-07-21",
+      "snippet": "Book's Most Mysterious Deaths? By Rafael Motamayor July 20, 2026 11:00 am EST HBO Spoilers ahead for \"Ho",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "Natalie Portman May Be Dark Portrait in Rachel Cusk's New Novel",
+      "url": "https://www.hollywoodreporter.com/movies/movie-news/natalie-portman-rachel-cusk-novel-1236651237",
+      "crawled_at": "2026-07-21",
+      "snippet": "",
+      "domain": "hollywoodreporter.com"
+    },
+    {
+      "title": "House Of The Dragon Season 3 Set Up A Game Of Thrones Connection You Might Have Missed",
+      "url": "https://www.slashfilm.com/2217370/house-of-the-dragon-season-3-game-of-thrones-connection-cat",
+      "crawled_at": "2026-07-21",
+      "snippet": "July 20, 2026 9:00 am EST Ollie Upton/HBO \"Words",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "Lindsay Hubbard on Summer House Season 11 Filming, Florastor Partnership",
+      "url": "https://www.hollywoodreporter.com/tv/tv-features/lindsay-hubbard-summer-house-season-11-filming-florastor-1236651239",
+      "crawled_at": "2026-07-21",
+      "snippet": "al share options Share",
+      "domain": "hollywoodreporter.com"
+    },
+    {
+      "title": "Chris Hemsworth's Early-Career Murder Mystery Movie Has A Satisfying Twist",
+      "url": "https://www.slashfilm.com/2215344/chris-hemsworth-murder-mystery-a-perfect-getaway",
+      "crawled_at": "2026-07-21",
+      "snippet": "Hemsworth's Early-Career Murder Mystery With Timothy Olyphant Has A Satisfying Twist By Witney Seibold July 20, 2026 1:45 pm EST Universal Filmmaker Da",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "Denzel Washington's 2023 Action Thriller Is Finding New Fans On HBO Max",
+      "url": "https://www.slashfilm.com/2218984/denzel-washington-2023-action-thriller-the-equalizer-3-streaming-hbo-max",
+      "crawled_at": "2026-07-21",
+      "snippet": "Washington's 2023 Action Thriller Is Finding New Fans On HBO Max By Witney Seibold July 20, 2026 6:00 pm EST Sony Pictures Releasing The ori",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "'Avatar Aang: The Last Airbender' Review: Film Sequel Delivers Halfway",
+      "url": "https://www.hollywoodreporter.com/movies/movie-reviews/avatar-aang-the-last-airbender-review-1236651085",
+      "crawled_at": "2026-07-21",
+      "snippet": "al share opt",
+      "domain": "hollywoodreporter.com"
+    },
+    {
+      "title": "House Of The Dragon Season 3's Lannister Twist Goes Completely Off-Book",
+      "url": "https://www.slashfilm.com/2216981/house-of-the-dragon-season-3-tyland-lannister-twist-off-book",
+      "crawled_at": "2026-07-21",
+      "snippet": "Season 3's Lannister Twist Goes Completely Off-Book By Jeremy Mathai July 19, 2026 10:00 pm EST Ollie Upton/HBO What is dead may never",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "Will Ferrell's Brand New Sports Comedy Series Is Taking Over Netflix",
+      "url": "https://www.slashfilm.com/2218285/will-ferrell-sports-comedy-series-the-hawk-streaming-netflix",
+      "crawled_at": "2026-07-21",
+      "snippet": "Ferrell's Brand New Sports Comedy Series Is Taking Over Netflix By Hannah Shaw-Williams July 20, 2026 10:00 am EST Colleen E Hayes/Netflix Will Ferrell",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "Tom Cruise's Digger Nearly Starred A Major International Comedian",
+      "url": "https://www.slashfilm.com/2218439/tom-cruise-digger-nearly-starred-vir-das",
+      "crawled_at": "2026-07-21",
+      "snippet": "Cruise's Digger Nearly Starred A Major International Comedian By Ryan Scott July 20, 2026 3:45 pm EST Warner Bros. It's way too early to be talking about a",
+      "domain": "slashfilm.com"
+    },
+    {
+      "title": "'Never Have I Ever' Maitreyi Ramakrishnan Teases 'Elle' Season 2",
+      "url": "https://www.hollywoodreporter.com/tv/tv-news/never-have-i-ever-maitreyi-ramakrishnan-elle-season-2-tease-1236651876",
+      "crawled_at": "2026-07-21",
+      "snippet": "on X Google Preferred Share to Fli",
+      "domain": "hollywoodreporter.com"
+    },
+    {
+      "title": "House Of The Dragon Season 3 Subtly Set Up Its Aegon The Conqueror Spin-Off",
+      "url": "https://www.slashfilm.com/2217191/house-of-the-dragon-season-3-aegon-the-conqueror-spin-off-setup",
+      "crawled_at": "2026-07-21",
+      "snippet": "July 19, 2026 10:30 pm EST Kevin Baker/HBO The night is dark a",
+      "domain": "slashfilm.com"
+    }
+  ],
+  "raw_pages": 6744,
+  "seed_urls": 52,
+  "tiers": [
+    {
+      "name": "Breaking",
+      "interval": "Every 2 hours",
+      "sources": 5,
+      "max_pages": 50,
+      "depth": 2
+    },
+    {
+      "name": "Daily",
+      "interval": "Daily \u00b7 02:00 UTC",
+      "sources": 16,
+      "max_pages": 100,
+      "depth": 3
+    },
+    {
+      "name": "Weekly",
+      "interval": "Sunday \u00b7 03:00 UTC",
+      "sources": 11,
+      "max_pages": 150,
+      "depth": 3
+    }
+  ],
+  "stack": [
+    "Python 3",
+    "Flask",
+    "SQLite FTS5",
+    "BeautifulSoup",
+    "Gunicorn",
+    "robots.txt",
+    "SimHash near-dupe filter",
+    "Finnhub media tickers"
+  ],
+  "shutdown": "2026-07-21",
+  "index_size_mb": 44,
+  "pages_size_mb": 261,
+  "site": "mediasearch.online"
+}

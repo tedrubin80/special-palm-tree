@@ -1,15 +1,18 @@
 # MediaSearch crawl schedules
-# Install with: crontab /var/www/search/crontab.txt
+# Install with: crontab /var/www/media/crontab.txt
+#
+# ALL JOBS DISABLED 2026-07-21 — site shutdown. Crawler stopped; data backed up.
+# To re-enable, remove the "DISABLED" prefix lines and install this file.
 #
 # Breaking news: every 2 hours (5 sites, depth 2, 50 pages)
-0 */2 * * * /var/www/search/run_crawl.sh breaking >> /var/www/search/data/logs/breaking.log 2>&1
+# DISABLED 2026-07-21: 0 */2 * * * /var/www/media/run_crawl.sh breaking >> /var/www/media/data/logs/breaking.log 2>&1
 #
 # Daily sources: 2 AM (genre + review sites, depth 3, 100 pages)
-0 2 * * * /var/www/search/run_crawl.sh daily >> /var/www/search/data/logs/daily.log 2>&1
+# DISABLED 2026-07-21: 0 2 * * * /var/www/media/run_crawl.sh daily >> /var/www/media/data/logs/daily.log 2>&1
 #
 # Weekly sources: Sunday 3 AM (niche + international, depth 3, 150 pages)
-0 3 * * 0 /var/www/search/run_crawl.sh weekly >> /var/www/search/data/logs/weekly.log 2>&1
+# DISABLED 2026-07-21: 0 3 * * 0 /var/www/media/run_crawl.sh weekly >> /var/www/media/data/logs/weekly.log 2>&1
 #
 # Stock quotes: 3x/day on weekdays (pre-open 9 AM ET, midday 1 PM ET, post-close 5 PM ET)
 # Server assumed UTC; ET is UTC-5 (standard) / UTC-4 (DST). Using UTC-4 (DST).
-0 13,17,21 * * 1-5 cd /var/www/search && ./venv/bin/python3 finance_fetch.py >> /var/www/search/data/logs/finance.log 2>&1
+# DISABLED 2026-07-21: 0 13,17,21 * * 1-5 cd /var/www/media && ./venv/bin/python3 finance_fetch.py >> /var/www/media/data/logs/finance.log 2>&1

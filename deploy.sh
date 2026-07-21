@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Deploy MediaSearch to mediasearch.online
-# Usage: sudo bash /var/www/search/deploy.sh
+# Usage: sudo bash /var/www/media/deploy.sh
 
 set -euo pipefail
 
@@ -36,12 +36,12 @@ ln -sf /etc/nginx/sites-available/mediasearch /etc/nginx/sites-enabled/
 
 # 2. Systemd service
 echo "[2/5] Installing systemd service..."
-cp /var/www/search/mediasearch.service /etc/systemd/system/
+cp /var/www/media/mediasearch.service /etc/systemd/system/
 systemctl daemon-reload
 
 # 3. Fix permissions so www-data can read the app
 echo "[3/5] Setting permissions..."
-chown -R www-data:www-data /var/www/search
+chown -R www-data:www-data /var/www/media
 
 # 4. Start services
 echo "[4/5] Starting gunicorn and reloading nginx..."

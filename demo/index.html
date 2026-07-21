@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MediaSearch — Project Archive</title>
+  <meta name="description" content="Archive showcase for MediaSearch: a from-scratch film-news crawler, FTS5 index, and search engine. Shut down July 2026." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Karla:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: oklch(0.08 0 0);
+      --surface: oklch(0.14 0 0);
+      --surface-2: oklch(0.18 0 0);
+      --ink: oklch(0.96 0.01 29);
+      --muted: oklch(0.68 0.02 29);
+      --primary: oklch(0.56 0.21 29);
+      --primary-soft: oklch(0.56 0.21 29 / 0.18);
+      --accent: oklch(0.82 0.13 88);
+      --rule: oklch(1 0 0 / 0.1);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --font-display: "Big Shoulders Display", Impact, sans-serif;
+      --font-body: "Karla", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+    a:hover { color: var(--ink); }
+
+    .wrap {
+      width: min(1120px, calc(100% - 2.5rem));
+      margin-inline: auto;
+    }
+
+    /* —— Hero —— */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      align-content: end;
+      padding: 2rem 0 4.5rem;
+      isolation: isolate;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 55% at 80% 10%, oklch(0.56 0.21 29 / 0.35), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 10% 80%, oklch(0.82 0.13 88 / 0.08), transparent 55%),
+        linear-gradient(180deg, oklch(0.12 0 0), var(--bg) 70%);
+    }
+
+    .hero-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        oklch(0 0 0 / 0.18) 3px,
+        oklch(0 0 0 / 0.18) 4px
+      );
+      opacity: 0.35;
+      mask-image: linear-gradient(180deg, black 40%, transparent);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: clamp(4rem, 18vh, 9rem);
+      animation: rise 0.9s var(--ease) both;
+    }
+
+    .brand {
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(2.75rem, 9vw, 5.5rem);
+      letter-spacing: -0.02em;
+      line-height: 0.9;
+      text-wrap: balance;
+      color: var(--ink);
+    }
+
+    .brand span {
+      color: var(--primary);
+    }
+
+    .status {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 0.45rem 0.7rem;
+      white-space: nowrap;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.6rem, 4.2vw, 2.75rem);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      max-width: 18ch;
+      text-wrap: balance;
+      margin-bottom: 1rem;
+      animation: rise 0.9s var(--ease) 0.1s both;
+    }
+
+    .hero-lede {
+      max-width: 42ch;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 2rem;
+      animation: rise 0.9s var(--ease) 0.18s both;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      animation: rise 0.9s var(--ease) 0.26s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.25rem;
+      border: 0;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.35s var(--ease), background 0.25s ease, color 0.25s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .btn-primary {
+      background: var(--primary);
+      color: oklch(0.99 0 0);
+    }
+
+    .btn-primary:hover { background: oklch(0.62 0.21 29); color: oklch(0.99 0 0); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--rule);
+    }
+
+    .btn-ghost:hover { border-color: var(--muted); color: var(--ink); }
+
+    /* —— Sections —— */
+    section {
+      padding: clamp(3.5rem, 8vw, 6rem) 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .sec-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 0.85rem;
+    }
+
+    .sec-title {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      letter-spacing: -0.015em;
+      line-height: 1.1;
+      text-wrap: balance;
+      margin-bottom: 0.75rem;
+      max-width: 18ch;
+    }
+
+    .sec-lede {
+      color: var(--muted);
+      max-width: 52ch;
+      margin-bottom: 2.25rem;
+    }
+
+    /* —— Stats —— */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+    }
+
+    .stat {
+      background: var(--surface);
+      padding: 1.35rem 1.2rem;
+    }
+
+    .stat b {
+      display: block;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      line-height: 1;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat span {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* —— Pipeline —— */
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      padding: 1.4rem 1.2rem;
+      background: var(--surface);
+      border-left: 3px solid var(--primary);
+      counter-increment: step;
+    }
+
+    .step::before {
+      content: counter(step, decimal-leading-zero);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: var(--primary);
+      display: block;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.04em;
+    }
+
+    .step h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .step p { color: var(--muted); font-size: 0.92rem; }
+
+    /* —— Tiers —— */
+    .tiers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .tier {
+      padding: 1.5rem;
+      background:
+        linear-gradient(145deg, var(--primary-soft), transparent 55%),
+        var(--surface);
+      border: 1px solid var(--rule);
+    }
+
+    .tier h3 {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    .tier .interval {
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .tier dl {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.45rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .tier dt { color: var(--muted); }
+    .tier dd { font-variant-numeric: tabular-nums; text-align: right; }
+
+    /* —— Domains —— */
+    .domain-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .domain-row {
+      display: grid;
+      grid-template-columns: minmax(8rem, 12rem) 1fr 3.5rem;
+      align-items: center;
+      gap: 0.85rem;
+      font-size: 0.9rem;
+    }
+
+    .domain-row .name {
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      height: 0.55rem;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 1.1s var(--ease);
+    }
+
+    .domain-row .count {
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* —— Articles —— */
+    .articles {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .article {
+      display: grid;
+      grid-template-columns: 6.5rem 1fr;
+      gap: 1.25rem;
+      padding: 1.25rem 0;
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.25s ease, padding-left 0.35s var(--ease);
+    }
+
+    .article:hover {
+      background: var(--surface);
+      padding-left: 0.75rem;
+    }
+
+    .article time {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      padding-top: 0.2rem;
+    }
+
+    .article h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      line-height: 1.3;
+      text-wrap: pretty;
+      margin-bottom: 0.35rem;
+    }
+
+    .article .meta {
+      font-size: 0.78rem;
+      color: var(--primary);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+
+    .article p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      max-width: 65ch;
+    }
+
+    /* —— Stack —— */
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip {
+      font-size: 0.85rem;
+      padding: 0.45rem 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      color: var(--ink);
+    }
+
+    /* —— Footer —— */
+    footer {
+      padding: 2.5rem 0 3.5rem;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    footer strong { color: var(--ink); font-weight: 600; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(1.25rem); filter: blur(4px); }
+      to { opacity: 1; transform: none; filter: none; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(1rem);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+      .bar-fill { transition: none; }
+    }
+
+    @media (max-width: 640px) {
+      .brand-row { flex-direction: column; align-items: flex-start; margin-bottom: 3rem; }
+      .article { grid-template-columns: 1fr; gap: 0.35rem; }
+      .domain-row { grid-template-columns: 1fr 3rem; }
+      .domain-row .bar-track { grid-column: 1 / -1; order: 3; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="brand-row">
+        <p class="brand">Media<span>Search</span></p>
+        <p class="status">Archive · Jul 2026</p>
+      </div>
+      <h1>A film-news search engine built from scratch.</h1>
+      <p class="hero-lede">
+        Seeded crawler, polite delays, SimHash dedupe, SQLite FTS5 index,
+        and a tiny Flask front end — then the reels stopped.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#archive">See what we indexed</a>
+        <a class="btn btn-ghost" href="#pipeline">How it worked</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="numbers">
+      <div class="wrap">
+        <p class="sec-label reveal">Final tally</p>
+        <h2 class="sec-title reveal">What the crawler pulled</h2>
+        <p class="sec-lede reveal">
+          Live from June 7 to July 21, 2026 across breaking, daily, and weekly seed tiers.
+        </p>
+        <div class="stats reveal" id="stats"></div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <div class="wrap">
+        <p class="sec-label reveal">Architecture</p>
+        <h2 class="sec-title reveal">Seeds → pages → index → search</h2>
+        <p class="sec-lede reveal">
+          No SaaS search API. Just a BFS crawler that respected robots.txt,
+          fingerprinted near-duplicates, and rebuilt an inverted index after every run.
+        </p>
+        <div class="pipeline">
+          <article class="step reveal">
+            <h3>Seed lists</h3>
+            <p>Breaking, daily, and weekly URL lists for trade press, genre sites, and niche outlets.</p>
+          </article>
+          <article class="step reveal">
+            <h3>Crawl</h3>
+            <p>Per-domain delay, depth caps, URL normalization, and SimHash near-dupe skips.</p>
+          </article>
+          <article class="step reveal">
+            <h3>Index</h3>
+            <p>HTML stripped to text, upserted into SQLite with FTS5 Porter stemming.</p>
+          </article>
+          <article class="step reveal">
+            <h3>Serve</h3>
+            <p>Flask + Gunicorn at mediasearch.online with BM25 ranking and snippets.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="schedule">
+      <div class="wrap">
+        <p class="sec-label reveal">Schedule</p>
+        <h2 class="sec-title reveal">Three crawl tiers</h2>
+        <p class="sec-lede reveal">
+          High-churn trades every two hours; deeper genre and niche runs on slower cadences.
+          All cron jobs disabled on shutdown day.
+        </p>
+        <div class="tiers" id="tiers"></div>
+      </div>
+    </section>
+
+    <section id="sources">
+      <div class="wrap">
+        <p class="sec-label reveal">Coverage</p>
+        <h2 class="sec-title reveal">Where the index came from</h2>
+        <p class="sec-lede reveal">Document counts by domain in the final search.db snapshot.</p>
+        <div class="domain-chart reveal" id="domains"></div>
+      </div>
+    </section>
+
+    <section id="archive">
+      <div class="wrap">
+        <p class="sec-label reveal">Sample index</p>
+        <h2 class="sec-title reveal">Headlines from the last crawl</h2>
+        <p class="sec-lede reveal">
+          A slice of titles sitting in the FTS index when the crawler was killed —
+          links go to the original publishers.
+        </p>
+        <div class="articles" id="articles"></div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="wrap">
+        <p class="sec-label reveal">Build</p>
+        <h2 class="sec-title reveal">Stack &amp; leftovers</h2>
+        <p class="sec-lede reveal">
+          Backups of <code>search.db</code>, crawl logs, seeds, and gzipped page HTML
+          live under <code>backups/</code>. This page is the public face of that archive.
+        </p>
+        <div class="stack reveal" id="stack"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <p><strong>MediaSearch</strong> · project showcase · crawler stopped <span id="shutdown">2026-07-21</span></p>
+    <p>Built as a learning search engine — not affiliated with the sites it indexed.</p>
+  </footer>
+
+  <script>
+    const fmt = (n) => Number(n).toLocaleString("en-US");
+
+    async function boot() {
+      const res = await fetch("./data.json");
+      const data = await res.json();
+
+      document.getElementById("shutdown").textContent = data.shutdown || "2026-07-21";
+
+      const stats = [
+        { value: data.total_documents, label: "Indexed docs" },
+        { value: data.raw_pages || data.total_documents, label: "Stored pages" },
+        { value: data.domain_count, label: "Domains" },
+        { value: data.seed_urls, label: "Seed URLs" },
+        { value: data.crawl_days?.length || 0, label: "Active days" },
+        { value: `${data.pages_size_mb || 261} MB`, label: "Page archive" },
+      ];
+
+      document.getElementById("stats").innerHTML = stats.map((s) => `
+        <div class="stat">
+          <b>${typeof s.value === "number" ? fmt(s.value) : s.value}</b>
+          <span>${s.label}</span>
+        </div>
+      `).join("");
+
+      document.getElementById("tiers").innerHTML = (data.tiers || []).map((t) => `
+        <article class="tier reveal">
+          <h3>${t.name}</h3>
+          <p class="interval">${t.interval}</p>
+          <dl>
+            <dt>Sources</dt><dd>${t.sources}</dd>
+            <dt>Max pages</dt><dd>${t.max_pages}</dd>
+            <dt>Depth</dt><dd>${t.depth}</dd>
+          </dl>
+        </article>
+      `).join("");
+
+      const max = Math.max(...(data.domains || []).map((d) => d.count), 1);
+      document.getElementById("domains").innerHTML = (data.domains || []).slice(0, 12).map((d) => `
+        <div class="domain-row">
+          <span class="name" title="${d.domain}">${d.domain}</span>
+          <div class="bar-track"><div class="bar-fill" data-width="${(d.count / max) * 100}"></div></div>
+          <span class="count">${fmt(d.count)}</span>
+        </div>
+      `).join("");
+
+      document.getElementById("articles").innerHTML = (data.articles || []).map((a) => `
+        <a class="article reveal" href="${a.url}" target="_blank" rel="noopener noreferrer">
+          <time datetime="${a.crawled_at}">${a.crawled_at}</time>
+          <div>
+            <p class="meta">${a.domain}</p>
+            <h3>${escapeHtml(a.title)}</h3>
+            <p>${escapeHtml(a.snippet || "")}</p>
+          </div>
+        </a>
+      `).join("");
+
+      document.getElementById("stack").innerHTML = (data.stack || []).map((s) =>
+        `<span class="chip">${escapeHtml(s)}</span>`
+      ).join("");
+
+      requestAnimationFrame(() => {
+        document.querySelectorAll(".bar-fill").forEach((el) => {
+          el.style.width = `${el.dataset.width}%`;
+        });
+      });
+
+      observeReveals();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function observeReveals() {
+      const nodes = document.querySelectorAll(".reveal");
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        nodes.forEach((n) => n.classList.add("in"));
+        return;
+      }
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("in");
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+      nodes.forEach((n) => io.observe(n));
+    }
+
+    boot().catch((err) => {
+      console.error(err);
+      document.getElementById("stats").innerHTML =
+        `<div class="stat"><b>—</b><span>Could not load data.json</span></div>`;
+    });
+  </script>
+</body>
+</html>

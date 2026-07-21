@@ -1,0 +1,16 @@
+# Railway deploy config for the MediaSearch Flask app (archive / optional revive).
+# Static showcase lives in demo/ — prefer Vercel for that surface.
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "gunicorn --workers 2 --bind 0.0.0.0:$PORT app:app"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[env]
+NIXPACKS_PYTHON_VERSION = "3.12"

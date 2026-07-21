@@ -1,33 +1,25 @@
-# Film News Search Engine & Seed Crawler
+# Film News Search Engine & Seed Crawler — Archive
 
-A simple search engine built from scratch: crawl film news websites, build an inverted index, and search the results.
+MediaSearch crawled film-news sites, built a SQLite FTS5 index, and served
+search results at mediasearch.online. **Crawler and search UI shut down
+2026-07-21.** The public surface is now the static showcase in `demo/`.
 
-## Architecture
-
-```
-seeds/film_news.txt   →   crawler.py   →   data/pages/   →   indexer.py   →   data/index/   →   search.py
-     (seed URLs)          (fetch HTML)      (raw pages)      (build index)    (inverted index)    (query)
-```
-
-## Quick Start
+## Showcase
 
 ```bash
-pip install -r requirements.txt
-
-# 1. Crawl seed sites
-python crawler.py
-
-# 2. Build the search index
-python indexer.py
-
-# 3. Search
-python search.py "oscar nominations"
+# Local preview
+cd demo && python3 -m http.server 8080
+# → http://127.0.0.1:8080
 ```
 
-## Configuration
+Deploy configs: `vercel.json` (static demo) · `railway.toml` / `Procfile` (Flask).
 
-Edit `config.py` to adjust crawl depth, delay, max pages, and user agent.
+## Architecture (historical)
 
-## Adding Seeds
+```
+seeds/*.txt  →  crawler.py  →  data/pages/  →  indexer.py  →  data/search.db  →  search UI
+```
 
-Add URLs to `seeds/film_news.txt` (one per line, `#` for comments).
+## Backups
+
+See `backups/` and `SCHEDULE.md`. Crawl cron is disabled for user `www-data`.
